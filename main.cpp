@@ -37,6 +37,28 @@ private:
     }
 };
 
+// ========== Utility ==========
+// Escapes quotes and backslashes for JSON strings
+std::string escape(const std::string& s) {
+    std::string out;
+    for (char c : s) {
+        if (c == '\"') out += "\\\"";
+        else if (c == '\\') out += "\\\\";
+        else out += c;
+    }
+    return out;
+}
+
+// ========== Utilities ==========
+// Trims whitespace from both ends of a string
+std::string trim(const std::string& str) {
+    auto first = str.find_first_not_of(" \t\n\r");
+    if (first == std::string::npos) return "";
+    auto last = str.find_last_not_of(" \t\n\r");
+    return str.substr(first, last - first + 1);
+}
+
+
 // ========== KeyValueStore ==========
 // Provides thread-safe key-value storage
 class KeyValueStore {
@@ -85,9 +107,20 @@ public:
     void save_to_file(const std::string& filename) const {
         std::lock_guard<std::mutex> lock(mutex_);
         std::ofstream ofs(filename);
-        for (const auto& [key, value] : store_) {
-            ofs << key << "=" << value << "\n";
+        if (!ofs) {
+            Logger::error("Could not open file for writing: " + filename);
+            return;
         }
+
+        ofs << "{\n";
+        size_t count = 0;
+        for (auto it = store_.begin(); it != store_.end(); ++it, ++count) {
+            ofs << "  \"" << escape(it->first) << "\": \"" << escape(it->second) << "\"";
+            if (std::next(it) != store_.end()) ofs << ",";
+            ofs << "\n";
+        }
+        ofs << "}\n";
+
         Logger::info("Data saved to " + filename);
     }
 
@@ -98,15 +131,30 @@ public:
             Logger::error("Could not open file: " + filename);
             return;
         }
+
+        store_.clear(); // Optional
+
         std::string line;
         while (std::getline(ifs, line)) {
-            auto delim = line.find('=');
-            if (delim != std::string::npos) {
-                std::string key = line.substr(0, delim);
-                std::string val = line.substr(delim + 1);
-                store_[key] = val;
-            }
+            line = trim(line);
+            if (line.empty() || line == "{" || line == "}") continue;
+
+            auto colon = line.find(':');
+            if (colon == std::string::npos) continue;
+
+            std::string key = trim(line.substr(0, colon));
+            std::string value = trim(line.substr(colon + 1));
+
+            // Remove surrounding quotes and optional comma
+            if (!key.empty() && key.front() == '"') key = key.substr(1);
+            if (!key.empty() && key.back() == '"') key.pop_back();
+            if (!value.empty() && value.front() == '"') value = value.substr(1);
+            if (!value.empty() && value.back() == ',') value.pop_back();
+            if (!value.empty() && value.back() == '"') value.pop_back();
+
+            store_[key] = value;
         }
+
         Logger::info("Data loaded from " + filename);
     }
 
@@ -115,14 +163,6 @@ private:
     std::unordered_map<std::string, std::string> store_;
 };
 
-// ========== Utilities ==========
-// Trims whitespace from both ends of a string
-std::string trim(const std::string& str) {
-    auto first = str.find_first_not_of(' ');
-    if (first == std::string::npos) return "";
-    auto last = str.find_last_not_of(' ');
-    return str.substr(first, last - first + 1);
-}
 
 // ========== CLI ==========
 // Runs interactive prompt and handles commands
@@ -207,13 +247,12 @@ Example session:
 >> get name
 >> get age
 >> list
->> save data.txt
+>> save data.json
 >> clear
 >> list
->> load data.txt
+>> load data.json
 >> list
 >> remove name
 >> list
 >> exit
 */
-
