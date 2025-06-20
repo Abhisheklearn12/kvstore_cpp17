@@ -1,8 +1,4 @@
 
-Absolutely! Here's a concise and professional `README.md` for your **C++17 Key-Value Store CLI App** -> great for GitHub, sharing, or personal reference.
-
----
-
 ## 🔐 C++17 Key-Value Store CLI 🗃️
 
 A clean, beginner-friendly, and thread-safe key-value store written in modern C++17, built with:
