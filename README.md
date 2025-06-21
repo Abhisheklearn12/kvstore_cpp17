@@ -87,13 +87,5 @@ name = Abhishek
 * This uses `std::mutex` for all data operations
 * Clean design, easy to extend with `export`, `import`, JSON libs like `nlohmann/json`, encryption, etc.
 
----
-
-Let me know if you want:
-
-* 📦 A CMake build system
-* 🔍 Valgrind/ASan tooling instructions
-* 🧩 Integration with real JSON libs
-
 (I just build this, only for fun, hahaha..)
 
