@@ -87,5 +87,5 @@ name = Abhishek
 * This uses `std::mutex` for all data operations
 * Clean design, easy to extend with `export`, `import`, JSON libs like `nlohmann/json`, encryption, etc.
 
-(I just build this, only for fun, hahaha..)
+(I just build this, only for fun, hahaha, and it becomes literal fun..)
 
