@@ -89,3 +89,4 @@ name = Abhishek
 
 (I just build this, only for fun, hahaha, and it becomes literal fun..)
 
+[![Watch Video](./media/thumbnail.png)](./media/demo-video.mp4)[▶️ Watch Demo Video](./media/demo-video.mp4)
